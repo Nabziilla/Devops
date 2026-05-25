@@ -5,6 +5,7 @@ import DataTable from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { ScrollText, CalendarClock, FileText, CheckCircle2 } from "lucide-react";
 import { cn, formatDate, safeJsonParse, statusBg } from "@/lib/utils";
+import PoliciesActions from "./actions-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -20,12 +21,7 @@ export default async function PoliciesPage() {
       <PageHeader
         title="Policies & Standards"
         description="Governance documents underpinning the control library. Each policy has an owner, version, and review cadence."
-        actions={
-          <>
-            <button className="btn">Open policy library</button>
-            <button className="btn-primary">+ New policy</button>
-          </>
-        }
+        actions={<PoliciesActions />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

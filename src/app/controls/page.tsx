@@ -5,14 +5,19 @@ import DataTable from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { ListChecks, CheckCircle2, AlertCircle, XCircle } from "lucide-react";
 import { cn, formatDate, percent, statusBg } from "@/lib/utils";
+import ControlsActions from "./actions-bar";
 
 export const dynamic = "force-dynamic";
 
 export default async function ControlsPage() {
-  const controls = await prisma.control.findMany({
-    include: { framework: true, owner: true, evidence: true, exceptions: { where: { active: true } } },
-    orderBy: [{ framework: { code: "asc" } }, { code: "asc" }],
-  });
+  const [controls, users, frameworks] = await Promise.all([
+    prisma.control.findMany({
+      include: { framework: true, owner: true, evidence: true, exceptions: { where: { active: true } } },
+      orderBy: [{ framework: { code: "asc" } }, { code: "asc" }],
+    }),
+    prisma.user.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    prisma.framework.findMany({ orderBy: { code: "asc" }, select: { id: true, code: true, name: true } }),
+  ]);
 
   const compliant = controls.filter((c) => c.status === "compliant").length;
   const partial = controls.filter((c) => c.status === "partial").length;
@@ -24,12 +29,7 @@ export default async function ControlsPage() {
       <PageHeader
         title="Compliance Controls"
         description="Control library mapped to Australian and international frameworks. Each control has an owner, validation cadence, and evidence."
-        actions={
-          <>
-            <button className="btn">Export evidence pack</button>
-            <button className="btn-primary">+ Add control</button>
-          </>
-        }
+        actions={<ControlsActions users={users} frameworks={frameworks} controls={controls} />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

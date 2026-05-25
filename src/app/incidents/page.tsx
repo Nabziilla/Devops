@@ -6,14 +6,18 @@ import { Badge } from "@/components/ui/badge";
 import { Siren, Clock, BellRing, ShieldAlert } from "lucide-react";
 import { cn, formatDate, severityBg, statusBg } from "@/lib/utils";
 import Link from "next/link";
+import IncidentsActions from "./actions-bar";
 
 export const dynamic = "force-dynamic";
 
 export default async function IncidentsPage() {
-  const incidents = await prisma.incident.findMany({
-    include: { assignee: true, assets: { include: { asset: true } } },
-    orderBy: { detectedAt: "desc" },
-  });
+  const [incidents, users] = await Promise.all([
+    prisma.incident.findMany({
+      include: { assignee: true, assets: { include: { asset: true } } },
+      orderBy: { detectedAt: "desc" },
+    }),
+    prisma.user.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+  ]);
 
   const open = incidents.filter((i) => i.status !== "closed");
   const ndbApplicable = incidents.filter((i) => i.ndbApplicable);
@@ -33,12 +37,7 @@ export default async function IncidentsPage() {
       <PageHeader
         title="Incident Response"
         description="Detection, containment, and regulatory notification tracking — including the NDB scheme and SOCI Act reporting obligations."
-        actions={
-          <>
-            <button className="btn">IR runbook</button>
-            <button className="btn-primary">+ Log incident</button>
-          </>
-        }
+        actions={<IncidentsActions users={users} />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

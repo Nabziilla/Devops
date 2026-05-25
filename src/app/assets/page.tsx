@@ -6,14 +6,18 @@ import { Badge } from "@/components/ui/badge";
 import { Server, Lock, Globe, Database, ShieldAlert } from "lucide-react";
 import { cn, formatDate, percent, severityBg } from "@/lib/utils";
 import Link from "next/link";
+import AssetsActions from "./actions-bar";
 
 export const dynamic = "force-dynamic";
 
 export default async function AssetsPage() {
-  const assets = await prisma.asset.findMany({
-    include: { owner: true },
-    orderBy: [{ criticality: "asc" }, { name: "asc" }],
-  });
+  const [assets, users] = await Promise.all([
+    prisma.asset.findMany({
+      include: { owner: true },
+      orderBy: [{ criticality: "asc" }, { name: "asc" }],
+    }),
+    prisma.user.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+  ]);
 
   const totals = {
     total: assets.length,
@@ -29,12 +33,7 @@ export default async function AssetsPage() {
       <PageHeader
         title="Asset Inventory"
         description="Cloud, on-prem and SaaS assets — classified by data sensitivity, criticality and regulatory scope."
-        actions={
-          <>
-            <button className="btn">Export CSV</button>
-            <button className="btn-primary">+ Register asset</button>
-          </>
-        }
+        actions={<AssetsActions users={users} assets={assets} />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">

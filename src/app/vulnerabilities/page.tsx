@@ -5,14 +5,18 @@ import DataTable from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Bug, AlertOctagon, Clock, Target } from "lucide-react";
 import { cn, formatDate, severityBg, statusBg } from "@/lib/utils";
+import VulnerabilitiesActions from "./actions-bar";
 
 export const dynamic = "force-dynamic";
 
 export default async function VulnerabilitiesPage() {
-  const vulns = await prisma.vulnerability.findMany({
-    include: { asset: true },
-    orderBy: [{ severity: "asc" }, { discoveredAt: "desc" }],
-  });
+  const [vulns, assets] = await Promise.all([
+    prisma.vulnerability.findMany({
+      include: { asset: true },
+      orderBy: [{ severity: "asc" }, { discoveredAt: "desc" }],
+    }),
+    prisma.asset.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+  ]);
 
   const open = vulns.filter((v) => v.status === "open" || v.status === "in_progress");
   const critical = open.filter((v) => v.severity === "critical");
@@ -24,12 +28,7 @@ export default async function VulnerabilitiesPage() {
       <PageHeader
         title="Vulnerability Management"
         description="CVE tracking with CVSS scoring, exploitability, and remediation SLA aligned to Essential Eight and APRA CPS 234."
-        actions={
-          <>
-            <button className="btn">Run scan</button>
-            <button className="btn-primary">Import SBOM</button>
-          </>
-        }
+        actions={<VulnerabilitiesActions assets={assets} />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

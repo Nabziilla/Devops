@@ -5,14 +5,19 @@ import DataTable from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { GitPullRequest, AlertTriangle, RotateCcw, CheckCircle } from "lucide-react";
 import { cn, formatDate, severityBg, statusBg } from "@/lib/utils";
+import ChangesActions from "./actions-bar";
 
 export const dynamic = "force-dynamic";
 
 export default async function ChangesPage() {
-  const changes = await prisma.change.findMany({
-    include: { approver: true, asset: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const [changes, users, assets] = await Promise.all([
+    prisma.change.findMany({
+      include: { approver: true, asset: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.user.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    prisma.asset.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+  ]);
 
   const pending = changes.filter((c) => c.status === "pending_approval");
   const emergency = changes.filter((c) => c.emergency);
@@ -24,12 +29,7 @@ export default async function ChangesPage() {
       <PageHeader
         title="Change Management"
         description="All production changes with approval chain, risk scoring, and rollback history. Required evidence for APRA CPS 234 and SOC 2 CC8.1."
-        actions={
-          <>
-            <button className="btn">Export change log</button>
-            <button className="btn-primary">+ Raise change</button>
-          </>
-        }
+        actions={<ChangesActions users={users} assets={assets} changes={changes} />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

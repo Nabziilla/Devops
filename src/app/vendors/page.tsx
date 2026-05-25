@@ -5,6 +5,7 @@ import DataTable from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Building2, ShieldQuestion, AlertTriangle, ClipboardCheck } from "lucide-react";
 import { cn, formatDate, safeJsonParse, statusBg } from "@/lib/utils";
+import VendorsActions from "./actions-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -21,12 +22,7 @@ export default async function VendorsPage() {
       <PageHeader
         title="Vendor Risk Management"
         description="Third-party risk register — supply chain due diligence required by SOCI and APRA CPS 234. Tracks attestations, data access scope, and assessment cadence."
-        actions={
-          <>
-            <button className="btn">Send DDQ</button>
-            <button className="btn-primary">+ Onboard vendor</button>
-          </>
-        }
+        actions={<VendorsActions />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

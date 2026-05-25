@@ -5,6 +5,7 @@ import DataTable from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Users, KeyRound, UserX, ShieldCheck } from "lucide-react";
 import { cn, formatDate, percent, statusBg } from "@/lib/utils";
+import IAMActions from "./actions-bar";
 
 export const dynamic = "force-dynamic";
 
@@ -24,12 +25,7 @@ export default async function IAMPage() {
       <PageHeader
         title="Identity & Access Management"
         description="Workforce identity posture: MFA coverage, privileged accounts, dormant users, and quarterly access review cadence."
-        actions={
-          <>
-            <button className="btn">Export user audit</button>
-            <button className="btn-primary">+ Schedule review</button>
-          </>
-        }
+        actions={<IAMActions users={users.map((u) => ({ id: u.id, name: u.name }))} userRows={users} />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

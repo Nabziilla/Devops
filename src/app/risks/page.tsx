@@ -5,14 +5,18 @@ import DataTable from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, TrendingDown, Eye, Shield } from "lucide-react";
 import { cn, formatDate, riskScoreLabel, statusBg } from "@/lib/utils";
+import RisksActions from "./actions-bar";
 
 export const dynamic = "force-dynamic";
 
 export default async function RisksPage() {
-  const risks = await prisma.risk.findMany({
-    include: { owner: true },
-    orderBy: { residualScore: "desc" },
-  });
+  const [risks, users] = await Promise.all([
+    prisma.risk.findMany({
+      include: { owner: true },
+      orderBy: { residualScore: "desc" },
+    }),
+    prisma.user.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+  ]);
 
   const open = risks.filter((r) => r.status !== "closed");
   const critical = open.filter((r) => r.residualScore >= 20).length;
@@ -30,12 +34,7 @@ export default async function RisksPage() {
       <PageHeader
         title="Risk Register"
         description="Inherent and residual risk scoring across cyber, privacy, operational and supply chain categories."
-        actions={
-          <>
-            <button className="btn">Export</button>
-            <button className="btn-primary">+ Log risk</button>
-          </>
-        }
+        actions={<RisksActions users={users} risks={risks} />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

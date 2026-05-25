@@ -5,14 +5,21 @@ import DataTable from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Archive, Lock, Calendar, ListChecks } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import EvidenceActions from "./actions-bar";
 
 export const dynamic = "force-dynamic";
 
 export default async function EvidencePage() {
-  const evidence = await prisma.evidence.findMany({
-    include: { control: { include: { framework: true } } },
-    orderBy: { collectedAt: "desc" },
-  });
+  const [evidence, controls] = await Promise.all([
+    prisma.evidence.findMany({
+      include: { control: { include: { framework: true } } },
+      orderBy: { collectedAt: "desc" },
+    }),
+    prisma.control.findMany({
+      orderBy: [{ framework: { code: "asc" } }, { code: "asc" }],
+      select: { id: true, code: true, framework: { select: { code: true } } },
+    }),
+  ]);
 
   const total = evidence.length;
   const immutable = evidence.filter((e) => e.immutable).length;
@@ -27,12 +34,7 @@ export default async function EvidencePage() {
       <PageHeader
         title="Evidence Repository"
         description="Immutable, retention-aware evidence linked to controls — ready for audit exports across Privacy Act, APRA CPS 234, ISO 27001 and SOC 2."
-        actions={
-          <>
-            <button className="btn">Audit pack</button>
-            <button className="btn-primary">+ Attach evidence</button>
-          </>
-        }
+        actions={<EvidenceActions controls={controls} evidence={evidence} />}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
